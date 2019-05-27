@@ -1,0 +1,3 @@
+xupnpd:
+  build: .
+  net: host

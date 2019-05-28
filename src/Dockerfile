@@ -12,6 +12,11 @@ COPY . /usr/src/xupnpd
 WORKDIR /usr/src/xupnpd
 
 RUN \
+  sed -i \
+    "s/cfg.ssdp_interface='lo'/cfg.ssdp_interface='any'/" \
+    xupnpd.lua
+
+RUN \
   make clean && \
   make x86
 

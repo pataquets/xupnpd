@@ -2,6 +2,8 @@
 -- clark15b@gmail.com
 -- https://tsdemuxer.googlecode.com/svn/trunk/xupnpd
 
+table.maxn = table.maxn or function(t) return #t end  -- support Lua 5.3+
+
 http.sendurl_buffer_size(32768,1);
 
 if cfg.daemon==true then core.detach() end
@@ -33,15 +35,25 @@ function load_plugins(path,what)
     local d=util.dir(path)
 
     if d then
-        for i,j in ipairs(d) do
-            if string.find(j,'^[%w_-]+%.lua$') then
-                if cfg.debug>0 then print(what..' \''..j..'\'') end
-                dofile(path..j)
+        table.sort(d)   -- ensure stable loading order
+        for i,n in ipairs(d) do
+            if string.find(n,'^[%w_-]+%.lua$') then
+                if cfg.debug>0 then print(what..' \''..n..'\'') end
+                dofile(path..n)
             end
         end
     end
 end
 
+function fix_path(s)
+    if string.find(s,'/$') then
+        return s
+    else
+        return s..'/'
+    end
+end
+
+cfg.playlists_path=fix_path(cfg.playlists_path)         -- add trailing slash
 
 -- options for profiles
 cfg.dev_desc_xml='/dev.xml'             -- UPnP Device Description XML
@@ -70,13 +82,11 @@ if not cfg.feeds_path then cfg.feeds_path=cfg.playlists_path end
 -- create feeds directory
 if cfg.feeds_path~=cfg.playlists_path then os.execute('mkdir -p '..cfg.feeds_path) end
 
+dofile('xupnpd_mime.lua')
+
 -- load config, plugins and profiles
 load_plugins(cfg.plugin_path,'plugin')
 load_plugins(cfg.config_path,'config')
-
-dofile('xupnpd_mime.lua')
-
-if cfg.profiles then load_plugins(cfg.profiles,'profile') end
 
 dofile('xupnpd_m3u.lua')
 dofile('xupnpd_ssdp.lua')
@@ -280,38 +290,21 @@ function get_drive_state(drive)
     return string.match(s,'drive state is:%s+(.+)%s+')
 end
 
-
-function profile_change(user_agent,req)
-    if not user_agent or user_agent=='' then return end
-
-    for name,profile in pairs(profiles) do
-        local match=profile.match
-
-        if profile.disabled~=true and  match and match(user_agent,req) then
-
-            local options=profile.options
-            local mtypes=profile.mime_types
-
-            if options then for i,j in pairs(options) do cfg[i]=j end end
-
-            if mtypes then
-                if profile.replace_mime_types==true then
-                    mime=mtypes
-                else
-                    for i,j in pairs(mtypes) do mime[i]=j end
-                end
-            end
-
-            return name
-        end
-    end
-    return nil
-end
-
-
 -- event handlers
 events['SIGUSR1']=reload_playlist
 events['reload']=reload_playlist
+events['update_playlist']=function(new_path, ...)
+  local pls = {...}
+  for i, t in ipairs(playlist) do
+    if table.concat(t) == table.concat(pls) then
+      t[1] = new_path
+      reload_playlist()
+      return
+    end 
+  end
+  table.insert(playlist, pls)
+  reload_playlist()
+end 
 events['store']=cache_store
 events['sys_gc']=sys_gc
 events['subscribe']=subscribe

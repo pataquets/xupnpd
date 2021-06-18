@@ -18,6 +18,6 @@ RUN \
 
 RUN \
   make clean && \
-  make x86
+  make
 
-ENTRYPOINT [ "./xupnpd" ]
+ENTRYPOINT [ "./xupnpd-x86" ]

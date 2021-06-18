@@ -79,6 +79,9 @@ cfg.default_mime_type='mpeg'
 cfg.feeds_update_interval=0
 cfg.playlists_update_interval=0
 
+-- host for UI playlist download
+--cfg.extern_url='http://youhost.com'
+
 -- playlist (m3u file path or path with alias
 playlist=
 {
@@ -90,10 +93,10 @@ playlist=
 -- feeds list (plugin, feed name, feed type)
 feeds=
 {
-    { 'vimeo',          'channel/hd',           'Vimeo HD Channel' },
-    { 'vimeo',          'channel/hdxs',         'Vimeo Xtreme sports' },
-    { 'vimeo',          'channel/mtb',          'Vimeo MTB Channel' },
-    { 'youtube',        'channel/top_rated',    'YouTube Top Rated' },
+--    { 'vimeo',          'channel/hd',           'Vimeo HD Channel' },
+--    { 'vimeo',          'channel/hdxs',         'Vimeo Xtreme sports' },
+--    { 'vimeo',          'channel/mtb',          'Vimeo MTB Channel' },
+--    { 'youtube',        'channel/top_rated',    'YouTube Top Rated' },
 --    { 'youtube',        'Drift0r',              'Drift0r' },
 --    { 'youtube',        'XboxAhoy',             'XboxAhoy' },
 --    { 'ag',             'videos',               'AG - New' },
@@ -116,5 +119,7 @@ cfg.playlists_path='./playlists/'
 cfg.ui_path='./ui/'
 cfg.drive=''                    -- reload playlists only if drive state=active/idle, example: cfg.drive='/dev/sda'
 cfg.profiles='./profiles/'      -- device profiles feature
+cfg.recent_path='./recent/'   -- client history feature
+cfg.recent_count=5
 
 dofile('xupnpd_main.lua')
